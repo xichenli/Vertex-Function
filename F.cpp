@@ -41,16 +41,21 @@ void F_magnetic::invert_F_magnetic(const chi_magnetic &chi, const chi0_magnetic 
 void F_magnetic::equation_of_motion(const nambu_fermionic_green_function &g2){
   std::cout<<"Equation of Motion"<<std::endl;
   double prefactor = U_/(n_sites_*n_sites_*beta_*beta_);
-  std::ofstream myfile;
-  myfile.open("selfenergy_EOM.dat");
+  std::ofstream EOMfile;
+  EOMfile.open("selfenergy_EOM2.dat");
+  std::ofstream file2;
+  file2.open("selfenergy_separate2.dat");
+
   for(int omega=0;omega<n_omega4_;++omega){
-    myfile<<(2.0*omega+1)*M_PI/beta_<<" ";
+    EOMfile<<(2.0*omega+1)*M_PI/beta_<<" ";
     for(int K=0;K<n_sites_;++K){
       std::complex<double> sigma_00(0.,0.);
       std::complex<double> sigma_01(0.,0.);
       for(int nu=-n_omega4_bose_+1;nu<n_omega4_bose_;++nu){
         for(int Q=0;Q<n_sites_;++Q){
           int KpQ=ks_->momenta_sum(K,Q);
+          std::complex<double> sigma_nuQ00(0.,0.);
+          std::complex<double> sigma_nuQ01(0.,0.);
           for(int omegaprime=-n_omega4_;omegaprime<n_omega4_;++omegaprime){
             for(int Kprime=0;Kprime<n_sites_;++Kprime){
               int KprimepQ = ks_->momenta_sum(Kprime,Q);
@@ -58,24 +63,53 @@ void F_magnetic::equation_of_motion(const nambu_fermionic_green_function &g2){
               if(nu<0){
                 tmp = std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*(g2(omegaprime,Kprime,0,0)*g2(omegaprime+nu,KprimepQ,0,0)+g2(omegaprime,Kprime,1,0)*g2(omegaprime+nu,KprimepQ,0,1))
                      +std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*(g2(omegaprime,Kprime,1,1)*g2(omegaprime+nu,KprimepQ,1,1)+g2(omegaprime,Kprime,0,1)*g2(omegaprime+nu,KprimepQ,1,0));
-                std::cout<<K<<" "<<Kprime<<" "<<Q<<" "<<omega<<" "<<omegaprime<<" "<<nu<<" "<<std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<tmp<<std::endl;
               }else{
                 tmp = v00(K,Kprime,Q,omega,omegaprime,nu)*(g2(omegaprime,Kprime,0,0)*g2(omegaprime+nu,KprimepQ,0,0)+g2(omegaprime,Kprime,1,0)*g2(omegaprime+nu,KprimepQ,0,1))
                      +v01(K,Kprime,Q,omega,omegaprime,nu)*(g2(omegaprime,Kprime,1,1)*g2(omegaprime+nu,KprimepQ,1,1)+g2(omegaprime,Kprime,0,1)*g2(omegaprime+nu,KprimepQ,1,0));
-                std::cout<<K<<" "<<Kprime<<" "<<Q<<" "<<omega<<" "<<omegaprime<<" "<<nu<<" "<<v00(K,Kprime,Q,omega,omegaprime,nu)<<" "<<v01(K,Kprime,Q,omega,omegaprime,nu)<<" "<<tmp<<std::endl;
               } 
               sigma_00 += tmp*g2(omega+nu,KpQ,0,0);
               sigma_01 += tmp*g2(omega+nu,KpQ,1,0);
+              sigma_nuQ00 += tmp*g2(omega+nu,KpQ,0,0)*prefactor;
+              sigma_nuQ01 += tmp*g2(omega+nu,KpQ,1,0)*prefactor;
+/*
+              std::complex<double> line1,line2,line3,line4;
+              if(nu<0){
+                line1 = std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*g2(omegaprime,Kprime,0,0)*g2(omegaprime+nu,KprimepQ,0,0)*g2(omega+nu,KpQ,1,0);
+                line2 = std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*g2(omegaprime,Kprime,1,0)*g2(omegaprime+nu,KprimepQ,0,1)*g2(omega+nu,KpQ,1,0);
+                line3 = std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*g2(omegaprime,Kprime,1,1)*g2(omegaprime+nu,KprimepQ,1,1)*g2(omega+nu,KpQ,1,0);
+                line4 = std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))*g2(omegaprime,Kprime,0,1)*g2(omegaprime+nu,KprimepQ,1,0)*g2(omega+nu,KpQ,1,0);
+              }
+              else{
+                line1 = v00(K,Kprime,Q,omega,omegaprime,nu)*g2(omegaprime,Kprime,0,0)*g2(omegaprime+nu,KprimepQ,0,0)*g2(omega+nu,KpQ,1,0);
+                line2 = v00(K,Kprime,Q,omega,omegaprime,nu)*g2(omegaprime,Kprime,1,0)*g2(omegaprime+nu,KprimepQ,0,1)*g2(omega+nu,KpQ,1,0);
+                line3 = v01(K,Kprime,Q,omega,omegaprime,nu)*g2(omegaprime,Kprime,1,1)*g2(omegaprime+nu,KprimepQ,1,1)*g2(omega+nu,KpQ,1,0);
+                line4 = v01(K,Kprime,Q,omega,omegaprime,nu)*g2(omegaprime,Kprime,0,1)*g2(omegaprime+nu,KprimepQ,1,0)*g2(omega+nu,KpQ,1,0);
+              }
+              if(K==6&&omega==0)
+                file2<<nu<<" "<<Q<<" "<<omegaprime<<" "<<Kprime<<" "<<line1<<line2<<line3<<line4<<std::endl;
+*/
+/* 
+              if(K==6&&omega==0&&nu<0)
+                file2<<nu<<" "<<Q<<" "<<omegaprime<<" "<<Kprime<<" "<<std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<tmp<<" "<<tmp*g2(omega+nu,KpQ,1,0)<<std::endl;
+              if(K==6&&omega==0&&nu>=0)
+                file2<<nu<<" "<<Q<<" "<<omegaprime<<" "<<Kprime<<" "<<v00(K,Kprime,Q,omega,omegaprime,nu)<<" "<<v01(K,Kprime,Q,omega,omegaprime,nu)<<" "<<tmp<<" "<<tmp*g2(omega+nu,KpQ,1,0)<<std::endl;
+              if(K==6&&omega==-1&&nu<0)
+                file3<<nu<<" "<<Q<<" "<<omegaprime<<" "<<Kprime<<" "<<std::conj(v00(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<std::conj(v01(K,Kprime,Q,-omega-1,-omegaprime-1,-nu))<<" "<<tmp<<" "<<tmp*g2(omega+nu,KpQ,1,0)<<std::endl;
+              if(K==6&&omega==-1&&nu>=0)
+                file3<<nu<<" "<<Q<<" "<<omegaprime<<" "<<Kprime<<" "<<v00(K,Kprime,Q,omega,omegaprime,nu)<<" "<<v01(K,Kprime,Q,omega,omegaprime,nu)<<" "<<tmp<<" "<<tmp*g2(omega+nu,KpQ,1,0)<<std::endl;
+*/
             }
           }
+          file2<<omega<<" "<<K<<" "<<nu<<" "<<Q<<" "<<std::real(sigma_nuQ00)<<" "<<std::imag(sigma_nuQ00)<<" "<<std::real(sigma_nuQ01)<<" "<<std::imag(sigma_nuQ01)<<std::endl;
         }
       }
       sigma_00 *= prefactor;
       sigma_01 *= prefactor;
-      myfile<<sigma_00.real()<<" "<<sigma_00.imag()<<" "<<sigma_01.real()<<" "<<sigma_01.imag()<<" ";
+      EOMfile<<sigma_00.real()<<" "<<sigma_00.imag()<<" "<<sigma_01.real()<<" "<<sigma_01.imag()<<" ";
     }
-    myfile<<"\n";
+    EOMfile<<"\n";
   }
-  myfile.close();
+  EOMfile.close();
+  file2.close();
 }
 

@@ -22,13 +22,12 @@ void chi_cluster_magnetic::compute_chi(const mc_vertex &g4_phuu,const mc_vertex 
   double sign_result;
   ar>>alps::make_pvp("/simulation/results/Sign/mean/value", sign_result);
   std::cout<<"Using value of Sign= "<< sign_result<<std::endl;
-
   /// \todo PUT IN THE BETA CONVENTION FOR THE SINGLE PARTICLE GF
-  for(int nu=0;nu<n_omega4_bose_;++nu){
-    for(int Q=0;Q<n_sites_;++Q){
-      for(int omega=-n_omega4_;omega<n_omega4_;++omega){
-        for(int K=0;K<n_sites_;++K){
-          for(int omegaprime=-n_omega4_;omegaprime<n_omega4_;++omegaprime){
+  for(int omega=-n_omega4_;omega<n_omega4_;++omega){
+    for(int K=0;K<n_sites_;++K){
+      for(int nu=0;nu<n_omega4_bose_;++nu){
+        for(int Q=0;Q<n_sites_;++Q){
+           for(int omegaprime=-n_omega4_;omegaprime<n_omega4_;++omegaprime){
             for(int Kprime=0;Kprime<n_sites_;++Kprime){
               int symmetrized_K_index     = ks_->symmetrized_K_index     (K,Kprime,Q);
               int symmetrized_Kprime_index= ks_->symmetrized_Kprime_index(K,Kprime,Q);
@@ -51,11 +50,15 @@ void chi_cluster_magnetic::compute_chi(const mc_vertex &g4_m, alps::hdf5::archiv
   ar>>alps::make_pvp("/simulation/results/Sign/mean/value", sign_result);
   std::cout<<"Using value of Sign= "<< sign_result<<std::endl;
   std::cout<<"Compute Cluster Magnetic Chi"<<std::endl;
-  /// \todo PUT IN THE BETA CONVENTION FOR THE SINGLE PARTICLE GF
-  for(int nu=0;nu<n_omega4_bose_;++nu){
-    for(int Q=0;Q<n_sites_;++Q){
-      for(int omega=-n_omega4_;omega<n_omega4_;++omega){
-        for(int K=0;K<n_sites_;++K){
+  std::ofstream file2;
+  file2.open("chi_separate2.dat");
+ /// \todo PUT IN THE BETA CONVENTION FOR THE SINGLE PARTICLE GF
+  for(int omega=-n_omega4_;omega<n_omega4_;++omega){
+    for(int K=0;K<n_sites_;++K){
+      for(int nu=0;nu<n_omega4_bose_;++nu){
+        for(int Q=0;Q<n_sites_;++Q){
+          std::complex<double>chi_nuQ00(0.,0.);
+          std::complex<double>chi_nuQ01(0.,0.);
           for(int omegaprime=-n_omega4_;omegaprime<n_omega4_;++omegaprime){
             for(int Kprime=0;Kprime<n_sites_;++Kprime){
               int symmetrized_K_index     = ks_->symmetrized_K_index     (K,Kprime,Q);
@@ -67,12 +70,17 @@ void chi_cluster_magnetic::compute_chi(const mc_vertex &g4_m, alps::hdf5::archiv
               //v01=F4(phuu)-F4(phud)
               v00(K,Kprime,Q,omega,omegaprime,nu)=g4_m.vertex00[symmetrized_Q_index][symmetrized_K_index][symmetrized_Kprime_index][freqindex3_buf]/sign_result;
               v01(K,Kprime,Q,omega,omegaprime,nu)=g4_m.vertex01[symmetrized_Q_index][symmetrized_K_index][symmetrized_Kprime_index][freqindex3_buf]/sign_result;
+              chi_nuQ00 += v00(K,Kprime,Q,omega,omegaprime,nu);
+              chi_nuQ01 += v01(K,Kprime,Q,omega,omegaprime,nu);
             }
           }
+          if(omega>=0)
+            file2<<omega<<" "<<K<<" "<<nu<<" "<<Q<<" "<<std::real(chi_nuQ00)<<" "<<std::imag(chi_nuQ00)<<" "<<std::real(chi_nuQ01)<<" "<<std::imag(chi_nuQ01)<<std::endl;
         }
       }
     }
   }
+  file2.close();
 }
 void chi_cglattice_magnetic::compute_chi_cglattice_directly(const chi0_cglattice_magnetic &chi0, const chi_cluster_magnetic &chic, const chi0_cluster_magnetic &chi0c){
   int size = int(std::sqrt(chic.v00(0,0).size()));

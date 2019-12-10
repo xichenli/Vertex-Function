@@ -130,7 +130,6 @@ void nambu_fermionic_matsubara_function::read_single_freq_ff(const std::string &
       operator()(omega,K,0,1)=std::complex<double>(g01_in_real, g01_in_imag);
       operator()(omega,K,1,0)=std::complex<double>(g10_in_real, g10_in_imag);
       operator()(omega,K,1,1)=std::complex<double>(g11_in_real, g11_in_imag);
-      
 //      std::cout<<" read in: "<<operator()(omega,K,0,0).real()<<" "<<operator()(omega,K,0,0).imag()<<" "<<operator()(omega,K,1,1).real()<<" "<<operator()(omega,K,1,1).imag()<<std::endl;
 //      std::cout<<" read in: "<<f00_in_real<<" "<<f00_in_imag<<" "<<f01_in_real<<" "<<f01_in_imag<<" "<<f10_in_real<<" "<<f10_in_imag<<" "<<f11_in_real<<" "<<f11_in_imag<<std::endl;
     }

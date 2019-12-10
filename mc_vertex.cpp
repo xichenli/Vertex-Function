@@ -40,10 +40,13 @@ void mc_vertex::read(alps::hdf5::archive &ar,std::string type,std::string e_or_v
         int symm_Q_index     =ks_->symmetrized_Q_index(K,Kprime,Q);
         vertex00[symm_Q_index][symm_K_index][symm_Kprime_index].resize(tot_freq_size);
         vertex01[symm_Q_index][symm_K_index][symm_Kprime_index].resize(tot_freq_size);
+        std::fill(vertex00[symm_Q_index][symm_K_index][symm_Kprime_index].begin(),vertex00[symm_Q_index][symm_K_index][symm_Kprime_index].end(),std::complex<double>(0.,0.));
+        std::fill(vertex01[symm_Q_index][symm_K_index][symm_Kprime_index].begin(),vertex01[symm_Q_index][symm_K_index][symm_Kprime_index].end(),std::complex<double>(0.,0.));
       }
     }
   }
-  for(int Q=0;Q<n_sites_;++Q){
+//  for(int Q=0;Q<n_sites_;++Q){
+  for(int Q=2;Q<=3;++Q){
     for(int K=0;K<n_sites_;++K){
       for(int Kprime=0;Kprime<n_sites_;++Kprime){
         if(ks_->vertex_multiplicity(K,Kprime,Q)!=0){
