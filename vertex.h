@@ -70,7 +70,7 @@ public:
   }
 
 protected:
-  int bindex(int Q, int nu)const{ return Q*n_omega4_bose_+(nu+n_omega4_bose_);} //bosonic multi-index
+  int bindex(int Q, int nu)const{ return Q*(2*n_omega4_bose_+1)+(nu+n_omega4_bose_);} //bosonic multi-index
   int findex(int K, int omega)const{ return K*(2*n_omega4_)+(omega+n_omega4_);} //fermionic multi-index
 
   vertex_matrix_t a_;

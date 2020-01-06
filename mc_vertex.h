@@ -12,7 +12,7 @@ public:
   static void set_parameters(alps::params &p);
   void read(alps::hdf5::archive &ar,std::string type,std::string e_or_v);
   int freqindex3(int nu, int omega1, int omega2) const{
-    return nu*n_omega4_*n_omega4_*4+(omega1+n_omega4_)*n_omega4_*2+(omega2+n_omega4_);
+    return (nu+n_omega4_bose_)*n_omega4_*n_omega4_*4+(omega1+n_omega4_)*n_omega4_*2+(omega2+n_omega4_);
   }
 
   vertex_t vertex00;

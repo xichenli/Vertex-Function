@@ -29,7 +29,7 @@ void mc_vertex::read(alps::hdf5::archive &ar,std::string type,std::string e_or_v
   ar>>alps::make_pvp("/simulation/results/Sign/mean/value", sign_result);
   std::cout<<"Using value of Sign= "<< sign_result<<std::endl;
    */
-  int tot_freq_size=n_omega4_bose_*(2*n_omega4_)*(2*n_omega4_);
+  int tot_freq_size=(2*n_omega4_bose_+1)*(2*n_omega4_)*(2*n_omega4_);
   std::cout<<"tot_freq_size"<<tot_freq_size<<std::endl;
   std::vector<double> buffer(tot_freq_size);
   for(int Q=0;Q<n_sites_;++Q){
@@ -46,8 +46,9 @@ void mc_vertex::read(alps::hdf5::archive &ar,std::string type,std::string e_or_v
     }
   }
 //  for(int Q=0;Q<n_sites_;++Q){
+//    for(int K=0;K<n_sites_;++K){
   for(int Q=2;Q<=3;++Q){
-    for(int K=0;K<n_sites_;++K){
+    for(int K=6;K<7;++K){
       for(int Kprime=0;Kprime<n_sites_;++Kprime){
         if(ks_->vertex_multiplicity(K,Kprime,Q)!=0){
           std::stringstream vertex00_re_name, vertex01_re_name;
@@ -56,7 +57,6 @@ void mc_vertex::read(alps::hdf5::archive &ar,std::string type,std::string e_or_v
           vertex00_im_name<<"/simulation/results/G4_Q_K_Kprime_nu_omega_omegaprime_"<<type<<"_im_"<<Q<<"_"<<K<<"_"<<Kprime<<"_times_sign/mean/"<<e_or_v;
           vertex01_re_name<<"/simulation/results/F4_Q_K_Kprime_nu_omega_omegaprime_"<<type<<"_re_"<<Q<<"_"<<K<<"_"<<Kprime<<"_times_sign/mean/"<<e_or_v;
           vertex01_im_name<<"/simulation/results/F4_Q_K_Kprime_nu_omega_omegaprime_"<<type<<"_im_"<<Q<<"_"<<K<<"_"<<Kprime<<"_times_sign/mean/"<<e_or_v;
-          //std::cout<<vertex00_re_name.str()<<" "<<vertex00_im_name.str()<<" "<<vertex01_re_name.str()<<" "<<vertex01_im_name.str()<<std::endl;
           int one=1, two=2;
           double *real_location, *imag_location;
          //00
@@ -73,6 +73,7 @@ void mc_vertex::read(alps::hdf5::archive &ar,std::string type,std::string e_or_v
           blas::dcopy_(&tot_freq_size, &(buffer[0]),&one, real_location,&two);
           ar>>alps::make_pvp(vertex01_im_name.str(), buffer);
           blas::dcopy_(&tot_freq_size, &(buffer[0]),&one, imag_location,&two);
+          if(Q==2) std::cout<<"check mc_vertex Q=2 nu-1 Kp="<<Kprime<<" "<<vertex00[Q][K][Kprime][0]<<std::endl;
         }
       }
     }

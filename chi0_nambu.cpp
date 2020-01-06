@@ -43,7 +43,7 @@ void chi0_cluster_magnetic::compute_chi0(const nambu_fermionic_green_function &g
   double prefactor=g2.conv()==beta_conv_single_freq?beta_*n_sites_:1./beta_/n_sites_;
   std::cout<<"compute cluster chi0. prefactor is: "<<prefactor<<" beta is: "<<beta_<<std::endl;
   //std::cout<<"g 0 0 is: "<<g2(0,0,spinup)<<" "<<g2(0,0,spindn)<<std::endl;
-  for(int nu=0;nu<n_omega4_bose_;++nu){
+  for(int nu=-n_omega4_bose_;nu<=n_omega4_bose_;++nu){
     for(int Q=0;Q<n_sites_;++Q){
       for(int omega=-n_omega4_;omega<n_omega4_;++omega){
         for(int K=0;K<n_sites_;++K){
@@ -61,11 +61,23 @@ void chi0_cluster_magnetic::compute_chi0(const nambu_fermionic_green_function &g
       }
     }
   }
+  for(int Q=2;Q<=3;Q++){
+    for(int nu=-1;nu<=1;nu++){
+      std::stringstream name00,name01;
+      name00<<"chi0_m00_Q"<<Q<<"nu"<<nu<<".dat";
+      name01<<"chi0_m01_Q"<<Q<<"nu"<<nu<<".dat";
+      std::ofstream file_m00,file_m01;
+      file_m00.open(name00.str().c_str());file_m01.open(name01.str().c_str());
+      vertex::matlab_print(file_m00,v00(Q,nu));
+      vertex::matlab_print(file_m01,v01(Q,nu));
+      file_m00.close();file_m01.close();
+    }
+  }
 }
 
 void chi0_cglattice_magnetic::compute_chi0(const nambu_fermionic_self_energy &sigma){
   double prefactor=beta_*n_sites_;
-  for(int nu=0;nu<n_omega4_bose_;++nu){
+  for(int nu=-n_omega4_bose_;nu<=n_omega4_bose_;++nu){
     for(int Q=0;Q<n_sites_;++Q){
       for(int omega=-n_omega4_;omega<n_omega4_;++omega){
         for(int K=0;K<n_sites_;++K){
